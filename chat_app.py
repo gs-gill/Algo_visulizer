@@ -1,5 +1,6 @@
 import asyncio
-
+from pywebio.platform.flask import webio_view
+from flask import Flask
 from pywebio import start_server
 from pywebio.input import *
 from pywebio.output import *
@@ -9,6 +10,7 @@ MAX_MESSAGES_CNT = 10 ** 4
 
 chat_msgs = []  # (name, msg)
 online_users = set()  #
+app = Flask(__name__)
 
 
 async def refresh_msg(my_name, msg_box):
@@ -74,4 +76,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    start_server(main, debug=True, port=8080)
+    start_server(main, port=8080)
