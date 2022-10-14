@@ -73,4 +73,8 @@ async def main():
 
 
 if __name__ == '__main__':
-    start_server(main, host='0.0.0.0')
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--port", type=int, default=8080)
+    args = parser.parse_args()
+    start_server(main, port=args.port, websocket_ping_interval=30)
