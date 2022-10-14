@@ -1,0 +1,9 @@
+{
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "python chat_app.py"
+      }
+    }
+  }
+}
