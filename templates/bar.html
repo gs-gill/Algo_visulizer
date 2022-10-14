@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>Free Chat</h1>
+        <input type="text" id="name" autocomplete="off"/>
+        <button onClick="showForm(event)" id="connect">Connect</button>
+        <form action="" onsubmit="sendMessage(event)" id="form" style="display: none">
+            <span id="c_name">Username : </span>
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <ul id="online" style="float:right"></ul>
+        <script>
+            var clientID = Date.now();
+            var ws = new WebSocket(`ws://localhost:8000/ws/${clientID}`);
+            function processMessage(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content);
+                messages.appendChild(message);
+            }
+
+            ws.onmessage = processMessage;
+
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                var n_input = document.getElementById("name");
+                ws.send(input.value+'-'+n_input.value);
+
+                input.value = ''
+                event.preventDefault()
+            }
+
+            function showForm(event) {
+                var button = document.getElementById("connect");
+                var n_input = document.getElementById("name");
+                var online_ul = document.getElementById("online");
+                var user = document.createElement('li')
+                var content = document.createTextNode(n_input.value)
+                user.appendChild(content);
+                online_ul.appendChild(user);
+                var form = document.getElementById("form");
+                button.style.display = "none";
+                n_input.style.display = "none";
+                var span = document.getElementById("c_name")
+                var content = document.createTextNode(n_input.value)
+                span.appendChild(content)
+                form.style.display = "block";
+            }
+
+        </script>
+    </body>
+</html>
