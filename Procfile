@@ -1,1 +1,1 @@
-web: python chat_app.py
+python app.chat_app.py
