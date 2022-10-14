@@ -73,4 +73,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    start_server(main)
+    start_server(main, host='0.0.0.0')
