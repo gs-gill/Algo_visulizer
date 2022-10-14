@@ -1,1 +1,1 @@
-web: python chat_app.py --port=8080
+web:python chat_app.py --port=8080
