@@ -1,1 +1,1 @@
-web: python app.chat_app.py
+worker: python app.chat_app.py
