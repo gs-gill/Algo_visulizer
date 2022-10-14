@@ -73,4 +73,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    start_server(main, port=8080)
+    start_server(main)
