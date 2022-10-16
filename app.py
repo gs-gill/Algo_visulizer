@@ -10,7 +10,7 @@ chat_msgs = []  # (name, msg)
 online_users = set()  #
 
 
-async def refresh_msg(my_name, msg_box):
+async def refresh_msg(my_name, msg_box, user_box):
     """send new message to current session"""
     global chat_msgs
     last_idx = len(chat_msgs)
@@ -19,6 +19,9 @@ async def refresh_msg(my_name, msg_box):
         for m in chat_msgs[last_idx:]:
             if m[0] != my_name:  # only refresh message that not sent by current user
                 msg_box.append(put_markdown('`%s`: %s' % m, sanitize=True))
+                user_box.reset()
+                for u in online_users:
+                    user_box.append(u)
 
         # remove expired message
         if len(chat_msgs) > MAX_MESSAGES_CNT:
@@ -28,20 +31,20 @@ async def refresh_msg(my_name, msg_box):
 
 
 async def main():
-    """PyWebIO chat room
-
-    You can chat with everyone currently online.
-    """
     global chat_msgs
 
     put_markdown("Welcome to the chat room, you can chat with all the people currently online.")
 
     msg_box = output()
-    put_scrollable(msg_box, height=300, keep_bottom=True)
+    user_box = output()
+    with use_scope('first'):
+        put_row([put_scrollable(msg_box, height=300, keep_bottom=True), None, put_scrollable(user_box, height=300)])
     nickname = await input("Your nickname", required=True,
-                           validate=lambda n: 'This name is already been used' if n in online_users or n == '📢' else None)
+                           validate=lambda
+                               n: 'This name is already been used' if n in online_users or n == '📢' else None)
 
     online_users.add(nickname)
+    user_box.append(*online_users)
     chat_msgs.append(('📢', '`%s` joins the room. %s users currently online' % (nickname, len(online_users))))
     msg_box.append(put_markdown('`📢`: `%s` join the room. %s users currently online' % (nickname, len(online_users)),
                                 sanitize=True))
@@ -51,20 +54,16 @@ async def main():
         online_users.remove(nickname)
         chat_msgs.append(('📢', '`%s` leaves the room. %s users currently online' % (nickname, len(online_users))))
 
-    refresh_task = run_async(refresh_msg(nickname, msg_box))
+    refresh_task = run_async(refresh_msg(nickname, msg_box, user_box))
 
     while True:
         data = await input_group('Send message', [
-            input(name='msg', help_text='Message content supports inline Markdown syntax'),
-            actions(name='cmd', buttons=['Send', 'Multiline Input',
-                                         {'label': 'Exit', 'type': 'cancel'}])
+            input(name='msg'),
+            actions(name='cmd', buttons=['Send', {'label': 'Exit', 'type': 'cancel'}])
         ], validate=lambda d: ('msg', 'Message content cannot be empty') if d['cmd'] == 'Send' and not d[
             'msg'] else None)
         if data is None:
             break
-        if data['cmd'] == 'Multiline Input':
-            data['msg'] = '\n' + await textarea('Message content',
-                                                help_text='Message content supports Markdown syntax')
         msg_box.append(put_markdown('`%s`: %s' % (nickname, data['msg']), sanitize=True))
         chat_msgs.append((nickname, data['msg']))
 
@@ -74,7 +73,8 @@ async def main():
 
 if __name__ == '__main__':
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--port", type=int, default=8080)
     args = parser.parse_args()
-    start_server(main, port=args.port, websocket_ping_interval=30)
+    start_server(main, port=args.port, websocket_ping_interval=30, debug=True)
